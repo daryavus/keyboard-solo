@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   function setNewWord() {
+    endGame();
     currentWord = words[Math.floor(Math.random() * words.length)];
     currentIndex = 0;
     mistakesInCurrentWord = 0;
@@ -46,45 +47,32 @@ document.addEventListener('DOMContentLoaded', function() {
   
   function handleKeyPress(e) {
     if (currentIndex >= currentWord.length) return;
-    
+
     const currentChar = currentWord[currentIndex];
     const spans = wordDiv.querySelectorAll('span');
-
     spans[currentIndex].classList.remove('w');
-    
-    if (e.key === currentChar) {
 
-      spans[currentIndex].classList.add('c');
-      currentIndex++;
-      
-      if (currentIndex === currentWord.length) {
+    if (e.key === currentChar) {
+        spans[currentIndex].classList.add('c');
+        currentIndex++;        
+    } else {
+        spans[currentIndex].classList.add('w');
+        mistakesInCurrentWord++;
+        wordMistakes.textContent = mistakesInCurrentWord;
+    }
+
+    if (currentIndex === currentWord.length) {
+      if (mistakesInCurrentWord === 0) {
         correctWords++;
         correctCount.textContent = correctWords;
-        
-        if (correctWords === 5) {
-          endGame(true);
-          return;
-        }
-        
-        setTimeout(setNewWord, 1000);
-      }
-    } else {
-
-      spans[currentIndex].classList.add('w');
-      mistakesInCurrentWord++;
-      wordMistakes.textContent = mistakesInCurrentWord;
-      
-      if (mistakesInCurrentWord >= 5) {
+      } else if (mistakesInCurrentWord >= 1) {
         wrongWords++;
         wrongCount.textContent = wrongWords;
-        
-        if (wrongWords === 5) {
-          endGame(false);
-        } else {
-          setTimeout(setNewWord, 1000);
-        }
       }
+
+      setTimeout(setNewWord, 0);
     }
+
     updateDisplayedWord();
   }
   
@@ -97,17 +85,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
   }
   
-  function endGame(isWin) {
-    clearInterval(timerInterval);
-    document.removeEventListener('keydown', handleKeyPress);
-    
-    if (isWin) {
+  function endGame() {
+    if (correctWords === 5) {
       alert(`Поздравляем! Вы выиграли за ${timerElement.textContent}!`);
-    } else {
-      alert(`Игра окончена. Вы проиграли. Время: ${timerElement.textContent}`);
+      clearInterval(timerInterval);
     }
-    
-    setTimeout(() => location.reload(), 2000);
+    if (wrongWords === 5 ) {
+      alert(`Игра окончена. Вы проиграли. Время: ${timerElement.textContent}`);
+      clearInterval(timerInterval);
+    }
   }
   
   initGame();
